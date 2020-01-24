@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<script src="../marker.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBhw5hPJvVU8Q-_Cv8je8SdQoRivVHA8DQ"></script>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="http://127.0.0.1:3000/socket.io/socket.io.js"></script>
+	<script type="text/javascript" src="../server.js"></script>
+	<script type="text/javascript"src="../routes/insert.js"></script>
+	<meta name="Author" content="_Fernando Rodriguez Leon">
+	<meta name="Copyright" content="Derechos Reservados">
+	<link href="jQueryAssets/jquery.ui.core.min.css" rel="stylesheet" type="text/css">
+	<link href="jQueryAssets/jquery.ui.theme.min.css" rel="stylesheet" type="text/css">
+	<link href="jQueryAssets/jquery.ui.button.min.css" rel="stylesheet" type="text/css">
+	<script src="jQueryAssets/jquery-1.11.1.min.js"></script>
+	<script src="jQueryAssets/jquery.ui-1.10.4.button.min.js"></script>
+	<script type="text/javascript" src="../controllers/database.js"></script>
+	<link rel="stylesheet" href="../bootstrap-4.3.1-dist/bootstrap-4.3.1-dist/css/bootstrap.min.css">
+	<script src="../bootstrap-4.3.1-dist/bootstrap-4.3.1-dist/js/jquery.js" ></script>
+	<script src="../bootstrap-4.3.1-dist/bootstrap-4.3.1-dist/js/bootstrap.min.js" ></script>
+	<link rel="stylesheet" href="estilos.css">
+	<title>REAL TIME TRACKING</title>
+	<!--
+	<script type="text/javascript">
+		
+		$( document ).ready(function() {
+			conectarse();
+			
+		});  
+		
+	</script>
+-->
+	<script type="text/javascript">
+
+		var SOCKET=null;
+		var MAP=null; 
+		var MARCADORES=[];
+		
+
+		function  conectarse()
+		{
+			SOCKET = io.connect("http://127.0.0.1:3000");
+			SOCKET.on("connect",function(){
+				document.getElementById("idEstado").innerHTML="Funcionando bajo la clave : \n ";
+
+				SOCKET.emit("loginMonitor",{monitor:"monitor"},function(data){
+					document.getElementById("idSocket").innerHTML=data.id;
+					
+
+				});
+				
+			});
+			SOCKET.on("disconnect",function(){
+				document.getElementById("idEstado").innerHTML="Desconectado";
+				eliminarMarcadores();
+			});
+
+
+		///////////// se inicia el mapa();////////
+		iniciarMapa();
+		getVehiculos();
+
+	    	SOCKET.on("monitorPrincipal",function(data){//{id,lat,lon}
+	    		
+	    		console.log(data);
+	    		
+	    		var index=buscar(data);
+			if(index===-1){//ES NUEVO
+				nuevoPosicion(data);
+				console.log("nuevo dato");
+			}
+			else{//REGISTRADO
+				actualizarPosicion(index,data);
+				console.log("acabo de actualizarPosicion");
+			}
+
+		});
+		SOCKET.on("monitorPrincipalDisconnet",function(data){//{id,socket_id}
+			
+			console.log(data);
+			var index=buscar(data);
+			if(index!==-1){//ENCONTRADO
+				removerPosicion(index);
+			}
+		});
+	//iniciarMapa();
+	
+	
+}
+    //-----------------------------
+
+    var myVar = setInterval(myTimer, 1000);
+
+    function myTimer() {
+    	var d = new Date();
+    	var t = d.toLocaleTimeString();
+    	document.getElementById("idHora").innerHTML = t;
+    }
+
+
+    
+    function getVehiculos()
+    {
+    	
+    	console.log("estoy llamando a getVehiculos");
+    	SOCKET.emit("posicionVehiculos");
+    	setTimeout("getVehiculos()", 4000); 
+		 //setInterval("getVehiculos()", 10000);
+
+		}  
+
+		function iniciarMapa(){
+			var mapProp = {
+				center:new google.maps.LatLng(6.5413928,-73.1281133),
+				zoom:14,
+				mapTypeId:google.maps.MapTypeId.ROADMAP
+			};
+			MAP=new google.maps.Map(document.getElementById("idGoogleMap"),mapProp);
+			
+		}
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	function buscar(data){   ///vehi1, lat, long
+		var index=-1;		
+		var n=MARCADORES.length;
+		for(var i=0;i<n;i++){
+			if(MARCADORES[i].getId()==data.id){
+				index=i;
+				break;
+			}
+		}			
+		return index;			
+	}	
+	function nuevoPosicion(data){
+		console.log("me llamaste a pintar");
+		var marca=new cMarker(MAP,data.id,data.lat,data.lon);
+		marca.dibujar();
+		MARCADORES.push(marca);//agregamos al ARRAY
+		
+	}
+	function actualizarPosicion(index,data){
+		var marca=MARCADORES[index];
+		marca.remover();	
+		marca.update(data.lat,data.lon);
+		marca.dibujar();
+		console.log("acabas de actualizarPosicion desde el metodo");
+	}
+	function removerPosicion(index){
+		var marca=MARCADORES[index];
+		marca.remover();
+		MARCADORES.splice(index, 1);//eliminamos del ARRAY	
+	}
+	function eliminarMarcadores(){
+		var n=MARCADORES.length;
+		for(var i=0;i<n;i++){
+			MARCADORES[i].remover();
+		}
+		MARCADORES=[];
+	}
+
+
+</script>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-primary">
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active">
+					<a class="nav-link" href="informe control.html">Inicio <span class="sr-only">(current)</span></a>
+				</li>
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Informes
+					</a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item" href="informes.html" target="iframe_a">Geocercas</a>
+						<a class="dropdown-item" href="informesRutas.html" target="iframe_a">Rutas</a>
+						<a class="dropdown-item" href="informesVehiculos.html" target="iframe_a">Vehiculos</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Acerca de</a>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</nav>
+
+
+<div>
+</div>
+</head>
+<body onload="conectarse()">
+</script>
+<header>
+	<div class="position-sticky">
+		<h1 style="text-align: center; font-style: oblique">Geolocalizaciòn</h1>
+
+	</div>
+	
+</header>
+<div class="midiv">
+<div id="idGoogleMap" style="width:100%;height:450px;"></div>
+<div id="idEstado" style="text-align: center; font-style: italic;"></div>
+<div id="idSocket" style="text-align: center; font-style: italic;"></div>
+<div id="idHora" style="text-align-last: center; font-style: italic;"></div>
+</div>
+<footer>
+	<h3 style="text-align: center; font-style: italic;">Proyecto desarrollado para optar por el tìtulo de ingeniero de sistemas</h3>
+</footer>
+</body>
+</html>

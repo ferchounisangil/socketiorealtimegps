@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html >
+
+<head>
+	<title>TRASH ANALTYCS SOFT</title>
+
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript"src="../routes/insert.js"></script>
+	<meta name="Author" content="_Fernando Rodriguez Leon">
+	<meta name="Copyright" content="Derechos Reservados">
+	<link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+	<script src="/bootstrap/js/jquery.js" ></script>
+	<script src="/bootstrap/js/bootstrap.min.js" ></script>
+	<script type="text/javascript" src="/static/menu.js"></script>
+</head>
+
+<body>
+
+
+	<script type="text/javascript">
+
+		var SOCKET=null;
+		var MAP=null; 
+		var MARCADORES=[];
+
+
+		function  conectarse()
+		{
+			SOCKET = io.connect("http://localhost:3000");
+			SOCKET.on("connect",function(){
+				document.getElementById("IdEstado").innerHTML="Funcionando bajo la clave : \n ";
+
+			});
+
+			SOCKET.emit("loginMonitor",{monitor:"monitor"},function(data){
+				document.getElementById("IdSocket").innerHTML=data.id;
+
+
+			});
+
+			
+			SOCKET.on("disconnect",function(){
+				document.getElementById("IdEstado").innerHTML="Desconectado";
+			});
+
+			SOCKET.on("setReporte",function(data){	
+				if (typeof data !== 'undefined' && data.length > 0) {
+					var html  = '';
+					data.forEach(element => {
+						var color="";
+						element.MINUTOS = Math.round(element.MINUTOS/60);
+						if(element.MINUTOS<0)
+						{
+							color = "danger";
+						}
+						else if(element.MINUTOS>0)
+						{
+							color = "success";
+						}else{
+							color = "info";
+						}
+						html+=` <tr class='bg-${color}'><td>${element.VEHICULO}</td>
+						<td>${element.RUTA}</td>
+						<td>${element.CONTROL}</td>
+						<td>${element.HORAA}</td>
+						<td>${element.HORAC}</td>
+						<td>${element.MINUTOS}</td></tr>
+
+						`;
+					});
+
+					$("#reporte>tbody").html(html);
+				}
+				else{
+					$("#reporte>tbody").html(`						
+						<tr>
+						<td colspan = "6" class="text-center">								
+						No hay datos para mostrar
+						</td>
+						</tr>
+
+						`);
+				}
+
+			});
+			function getReporte(fecha)
+			{
+				SOCKET.emit("reporte",fecha); 
+			}
+			$("#generarinf").on('click',function(){
+				var fecha = $("#fechainforme").val();
+				getReporte(fecha);
+			});
+			
+		}
+		$( document ).ready(function() {
+			conectarse();
+			
+		});  
+
+	
+
+	</script>
+
+
+	<div id="carouselExampleControls" class="carousel slide" data-ride="carousel">
+		<div class="carousel-inner">
+			<div class="carousel-item active">
+				<img src="/static/basura.gif" class="d-block w-70" alt="primer vehiculo">
+			</div>
+			<div class="carousel-item">
+				<img src="/static/car2.jpg" class="d-block w-70" alt="segundo vehiculo">
+			</div>
+			<div class="carousel-item">
+				<img src="/static/trash2.png" class="d-block w-70" alt="tercer vehiculo">
+			</div>
+		</div>
+		<a class="carousel-control-prev" href="#carouselExampleControls" role="button" data-slide="prev">
+			<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+			<span class="sr-only">Previous</span>
+		</a>
+		<a class="carousel-control-next" href="#carouselExampleControls" role="button" data-slide="next">
+			<span class="carousel-control-next-icon" aria-hidden="true"></span>
+			<span class="sr-only">Next</span>
+		</a>
+	</div>
+
+
+
+	<nav class="navbar navbar-expand-lg navbar-light bg-primary">
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="navbarSupportedContent">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item active">
+					<a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+				</li>
+				<li class="nav-item active">
+					<a class="nav-link" href="asociacion.html">Relacion<span class="sr-only">(current)</span></a>
+				</li>
+				<li class="nav-item dropdown">
+					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Informes
+					</a>
+					<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+						<a class="dropdown-item" href="index.html" target="iframe_a">Geocercas</a>
+						<a class="dropdown-item" href="informesRutas.html" target="iframe_a">Rutas</a>
+						<a class="dropdown-item" href="informesVehiculos.html" target="iframe_a">Vehiculos</a>
+						<div class="dropdown-divider"></div>
+						<a class="dropdown-item" href="#">Acerca de</a>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</nav>
+	<div class="container mt-4">
+		<div class="row justify-content-md-center">
+			<div class="col-md-6">
+				<div class="card border-info mb-3">
+					<div class="card-header">Informe de Control</div>
+					<div class="card-body text-info">
+						<h5 class="card-title">Fecha</h5>
+						<p><input type="date" class="form-control" name="fechainforme" id="fechainforme"></p>
+						<a id="generarinf" class="btn btn-primary text-white">Generar</a>
+					</div>
+				</div>
+			</div>
+
+		</div>
+		<div class="row justify-content-md-center mt-3">
+			<div class="col-md-10">
+				<div class="table-responsive" >
+					<table class="table" id = "reporte">
+						<thead class="thead-dark text-center">
+							<tr>
+								<th scope="col">VEHICULO</th>
+								<th scope="col">RUTA</th>
+								<th scope="col">CONTROL</th>
+								<th scope="col">HORA ASIGNADA</th>
+								<th scope="col">HORA CONTROL</th>
+								<th scope="col">MINUTOS</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td colspan = "6" class="text-center">								
+									No hay datos para mostrar
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<header>
+		<div id="IdEstado" style="text-align: center; font-style: italic;"></div>
+		<div id="IdSocket" style="text-align: center; font-style: italic;"></div>
+		<div id="IdHora" style="text-align-last: center; font-style: italic;"></div>
+	</header>
+</body>
+</html>

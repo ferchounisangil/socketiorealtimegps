@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="jumbotron text-center">
+  <h1>My First Bootstrap Page</h1>
+  <p>Resize this responsive page to see the effect!</p> 
+</div>
+  
+<div class="container">
+  <div class="row">
+    <div class="col-sm-4">
+      <h3>Column 1</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit...</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...</p>
+    </div>
+    <div class="col-sm-4">
+      <h3>Column 2</h3>
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit...</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...</p>
+    </div>
+    <div class="col-sm-4">
+      <h3>Column 3</h3>        
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit...</p>
+      <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...</p>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+
+    var SOCKET=null;
+    var MAP=null; 
+    var MARCADORES=[];
+
+
+    function  conectarse()
+    {
+      SOCKET = io.connect("http://127.0.0.1:3000");
+      SOCKET.on("connect",function(){
+        document.getElementById("idEstado").innerHTML="Funcionando bajo la clave : \n ";
+
+      });
+
+      
+      SOCKET.on("disconnect",function(){
+        document.getElementById("idEstado").innerHTML="Desconectado";
+      });
+
+      SOCKET.on("setReporte",function(data){  
+        if (typeof data !== 'undefined' && data.length > 0) {
+          var html  = '';
+          data.forEach(element => {
+            var color="";
+            if(element.MINUTOS>0)
+            {
+              color = "danger";
+            }
+            else if(element.MINUTOS<0)
+            {
+              color = "success";
+            }else{
+              color = "info";
+            }
+            html+=` <tr class='bg-${color}'><td>${element.VEHICULO}</td>
+                <td>${element.RUTA}</td>
+                <td>${element.CONTROL}</td>
+                <td>${element.HORAA}</td>
+                <td>${element.HORAC}</td>
+                <td>${element.MINUTOS}</td></tr>
+
+            `;
+          });
+
+          $("#reporte>tbody").html(html);
+        }
+        else{
+          $("#reporte>tbody").html(`            
+            <tr>
+            <td colspan = "6" class="text-center">                
+            No hay datos para mostrar
+            </td>
+            </tr>
+
+            `);
+        }
+
+      });
+      function getReporte(fecha)
+      {
+        SOCKET.emit("reporte",fecha); 
+      }
+      $("#generarinf").on('click',function(){
+        var fecha = $("#fechainforme").val();
+        getReporte(fecha);
+      });
+      
+    }
+    $( document ).ready(function() {
+      conectarse();
+      
+    });  
+
+
+  </script>
+
+
+
+</body>
+</html>

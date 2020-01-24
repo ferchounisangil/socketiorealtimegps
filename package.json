@@ -1,0 +1,53 @@
+{
+  "name": "proyecto-acuasan",
+  "version": "1.0.0",
+  "description": "GEOLOCALIZACION EN TIEMPO REAL DE LOS VEHICULOS RECOLECTORES",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ferchounisangil/webtiemporealgps.git"
+  },
+  "keywords": [
+    "GPS",
+    "GEOLOCATION",
+    "REAL-TIME",
+    "NODEJS",
+    "SOCKET",
+    "IO"
+  ],
+  "author": "LUIS FERNANDO RODRIGUEZ LEON",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ferchounisangil/webtiemporealgps/issues"
+  },
+  "homepage": "https://github.com/ferchounisangil/webtiemporealgps#readme",
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "connect-flash": "^0.1.1",
+    "express": "^4.17.1",
+    "express-handlebars": "^3.1.0",
+    "express-mysql-session": "^2.1.0",
+    "express-session": "^1.16.2",
+    "express-validator": "^6.1.1",
+    "io": "^1.0.0",
+    "moment": "^2.24.0",
+    "moment-duration-format": "^2.3.2",
+    "morgan": "^1.9.1",
+    "mysql": "^2.17.1",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "path": "^0.12.7",
+    "promise": "^8.0.3",
+    "session": "^0.1.0",
+    "socket.io": "^2.2.0",
+    "timeago.js": "^4.0.0-beta.2"
+  }
+}
