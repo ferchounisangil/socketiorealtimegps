@@ -47,7 +47,7 @@
     "path": "^0.12.7",
     "promise": "^8.0.3",
     "session": "^0.1.0",
-    "socket.io": "^2.2.0",
+    "socket.io": "^2.5.0",
     "timeago.js": "^4.0.0-beta.2"
   }
 }
